@@ -1,0 +1,15 @@
+{
+  "model_name": "RF_TFIDF",
+  "timestamp": "20260129_093512",
+  "metrics": {
+    "accuracy": 0.3,
+    "f1_score": 0.2519480519480519,
+    "precision": 0.325,
+    "recall": 0.3,
+    "roc_auc": 0.5183928571428572
+  },
+  "metadata": {
+    "vectorizer": "TFIDF",
+    "model_type": "rf"
+  }
+}
