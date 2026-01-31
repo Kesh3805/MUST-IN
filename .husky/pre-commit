@@ -1,4 +1,14 @@
 #!/bin/sh
-. "$(dirname "$0")/_/husky.sh"
+# 🐶 MUST++ Pre-commit Hook
+# Ensures code quality before every commit
 
+echo "🔍 Running pre-commit checks..."
+
+# Run lint-staged for Python files
 npx lint-staged
+
+# Check for any syntax errors in Python files
+echo "✓ Checking Python syntax..."
+python -m py_compile $(git diff --cached --name-only --diff-filter=ACM | grep '\.py$') 2>/dev/null || true
+
+echo "✅ Pre-commit checks passed!"

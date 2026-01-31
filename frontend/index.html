@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MUST++ | Multilingual Hate Speech Detection</title>
+    <link rel="stylesheet" href="styles.css">
+    <meta name="description" content="Operator-grade multilingual hate speech detection system with support for Tamil, Hindi, English and code-mixed text">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%233b82f6'/%3E%3Cstop offset='100%25' stop-color='%238b5cf6'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect rx='15' width='100' height='100' fill='url(%23g)'/%3E%3Ctext x='50' y='68' font-size='50' font-family='system-ui' font-weight='bold' fill='white' text-anchor='middle'%3EM%2B%3C/text%3E%3C/svg%3E">
+    
+    <!-- Open Graph -->
+    <meta property="og:title" content="MUST++ | Multilingual Hate Speech Detection">
+    <meta property="og:description" content="Operator-grade hate speech detection for Tamil, Hindi, English and code-mixed text with full explainability">
+    <meta property="og:type" content="website">
+    
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="MUST++ | Multilingual Hate Speech Detection">
+    <meta name="twitter:description" content="Safety-first multilingual content moderation with full explainability">
+    
+    <!-- Theme Color -->
+    <meta name="theme-color" content="#3b82f6" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#1e293b" media="(prefers-color-scheme: dark)">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="header-content">
+                <h1 class="app-title">MUST++</h1>
+                <span class="app-subtitle">Multilingual Hate Speech Detection</span>
+            </div>
+            <div class="header-actions">
+                <button class="history-toggle" id="historyToggle" aria-label="View history">
+                    <span>📋</span>
+                    <span>History</span>
+                    <span class="history-badge hidden" id="historyBadge">0</span>
+                </button>
+                <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode">
+                    <span class="theme-toggle-icon" id="themeIcon">🌙</span>
+                </button>
+                <div class="system-status" id="systemStatus">
+                    <span class="status-indicator" id="statusIndicator"></span>
+                    <span class="status-text" id="statusText">Checking...</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- System Banner (for degraded mode) -->
+        <div class="system-banner hidden" id="systemBanner">
+            <span class="banner-icon">⚠</span>
+            <span class="banner-text" id="bannerText">Running in safety-only mode</span>
+            <button class="banner-dismiss" onclick="dismissBanner()" aria-label="Dismiss">×</button>
+        </div>
+
+        <main class="main-content">
+            <!-- ==================== INPUT LAYER ==================== -->
+            <section class="layer input-layer" aria-labelledby="inputLayerTitle">
+                <h2 id="inputLayerTitle" class="layer-title">Input</h2>
+                
+                <div class="input-container">
+                    <div class="textarea-wrapper">
+                        <textarea 
+                            id="textInput" 
+                            class="text-input"
+                            placeholder="Enter text in Tamil, Hindi, English, or mixed scripts..."
+                            aria-describedby="inputHelp charCount"
+                            spellcheck="false"
+                            autocomplete="off"
+                        ></textarea>
+                        <div class="input-meta">
+                            <div class="script-indicator" id="scriptIndicator">
+                                <span class="script-label">Script:</span>
+                                <span class="script-value" id="scriptValue">—</span>
+                            </div>
+                            <div class="char-counter" id="charCount">
+                                <span id="charCountValue">0</span> characters
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <p id="inputHelp" class="input-help">
+                        Supports Tamil script, Hindi script, Romanized text, and mixed scripts. 
+                        Text is analyzed as-is without translation.
+                    </p>
+                    
+                    <div class="input-options">
+                        <div class="language-hint-group">
+                            <label for="languageHint" class="hint-label">Language hint (optional):</label>
+                            <select id="languageHint" class="hint-select">
+                                <option value="">Auto-detect</option>
+                                <option value="tamil">Tamil</option>
+                                <option value="hindi">Hindi</option>
+                                <option value="english">English</option>
+                                <option value="tanglish">Tanglish (Romanized Tamil)</option>
+                                <option value="hinglish">Hinglish (Romanized Hindi)</option>
+                            </select>
+                        </div>
+                        
+                        <button 
+                            id="analyzeBtn" 
+                            class="analyze-button"
+                            type="button"
+                            aria-describedby="analyzeHelp"
+                        >
+                            Analyze
+                        </button>
+                    </div>
+                    <p id="analyzeHelp" class="sr-only">Click to analyze the entered text for hate speech</p>
+                </div>
+            </section>
+
+            <!-- Processing Indicator -->
+            <div class="processing-indicator hidden" id="processingIndicator">
+                <div class="processing-content">
+                    <div class="processing-spinner"></div>
+                    <span class="processing-text">Analyzing language & safety signals</span>
+                </div>
+            </div>
+
+            <!-- ==================== DECISION LAYER ==================== -->
+            <section class="layer decision-layer hidden" id="decisionLayer" aria-labelledby="decisionLayerTitle">
+                <h2 id="decisionLayerTitle" class="layer-title">Decision</h2>
+                
+                <div class="decision-container">
+                    <div class="decision-primary">
+                        <div class="label-display" id="labelDisplay">
+                            <span class="label-text" id="labelText">—</span>
+                        </div>
+                        
+                        <div class="confidence-display">
+                            <div class="confidence-bar-container">
+                                <div class="confidence-bar" id="confidenceBar"></div>
+                            </div>
+                            <div class="confidence-value">
+                                <span class="confidence-number" id="confidenceValue">0.00</span>
+                                <span class="confidence-label">confidence</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="safety-badge-container">
+                        <div class="safety-badge" id="safetyBadge" tabindex="0" role="button" aria-describedby="safetyTooltip">
+                            <span class="badge-label" id="badgeLabel">Normal</span>
+                        </div>
+                        <div class="tooltip hidden" id="safetyTooltip" role="tooltip">
+                            <span id="tooltipText">Classification completed with primary classifier.</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ==================== EXPLANATION LAYER ==================== -->
+            <section class="layer explanation-layer hidden" id="explanationLayer" aria-labelledby="explanationLayerTitle">
+                <button 
+                    class="layer-toggle" 
+                    id="explanationToggle"
+                    aria-expanded="false"
+                    aria-controls="explanationContent"
+                >
+                    <h2 id="explanationLayerTitle" class="layer-title">Explanation</h2>
+                    <span class="toggle-icon" aria-hidden="true">▶</span>
+                </button>
+                
+                <div class="layer-content collapsed" id="explanationContent">
+                    <div class="explanation-section">
+                        <h3 class="section-title">Highlighted Text</h3>
+                        <div class="highlighted-text-container" id="highlightedText">
+                            <!-- Original text with harm tokens highlighted -->
+                        </div>
+                    </div>
+                    
+                    <div class="explanation-section">
+                        <h3 class="section-title">Why this label was chosen</h3>
+                        <p class="justification-text" id="labelJustification">—</p>
+                    </div>
+                    
+                    <div class="explanation-section" id="rejectedLabelsSection">
+                        <h3 class="section-title">Why weaker labels were rejected</h3>
+                        <ul class="rejected-labels-list" id="rejectedLabelsList">
+                            <!-- Dynamically populated -->
+                        </ul>
+                    </div>
+                    
+                    <div class="explanation-section" id="harmTokensSection">
+                        <h3 class="section-title">Key harm tokens</h3>
+                        <div class="harm-tokens-container" id="harmTokensContainer">
+                            <!-- Token chips -->
+                        </div>
+                    </div>
+                    
+                    <div class="explanation-section" id="identityGroupsSection">
+                        <h3 class="section-title">Identity groups detected</h3>
+                        <div class="identity-groups-container" id="identityGroupsContainer">
+                            <!-- Group chips -->
+                        </div>
+                    </div>
+                    
+                    <div class="copy-explanation-container">
+                        <button class="copy-button" id="copyExplanationBtn" type="button">
+                            Copy explanation
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ==================== SYSTEM TRACE LAYER ==================== -->
+            <section class="layer trace-layer hidden" id="traceLayer" aria-labelledby="traceLayerTitle">
+                <button 
+                    class="layer-toggle" 
+                    id="traceToggle"
+                    aria-expanded="false"
+                    aria-controls="traceContent"
+                >
+                    <h2 id="traceLayerTitle" class="layer-title">System Trace</h2>
+                    <span class="toggle-badge">Advanced</span>
+                    <span class="toggle-icon" aria-hidden="true">▶</span>
+                </button>
+                
+                <div class="layer-content collapsed" id="traceContent">
+                    <div class="trace-grid">
+                        <!-- Languages -->
+                        <div class="trace-item">
+                            <span class="trace-label">Languages detected</span>
+                            <div class="trace-value" id="traceLanguages">—</div>
+                        </div>
+                        
+                        <!-- Scripts -->
+                        <div class="trace-item">
+                            <span class="trace-label">Script distribution</span>
+                            <div class="trace-value" id="traceScripts">—</div>
+                        </div>
+                        
+                        <!-- Code Mixed -->
+                        <div class="trace-item">
+                            <span class="trace-label">Code-mixed</span>
+                            <div class="trace-value" id="traceCodeMixed">—</div>
+                        </div>
+                        
+                        <!-- Transformer -->
+                        <div class="trace-item">
+                            <span class="trace-label">Transformer used</span>
+                            <div class="trace-value" id="traceTransformer">—</div>
+                        </div>
+                        
+                        <!-- Transformer Prediction -->
+                        <div class="trace-item">
+                            <span class="trace-label">Transformer prediction</span>
+                            <div class="trace-value" id="traceTransformerPred">—</div>
+                        </div>
+                        
+                        <!-- Transformer Confidence -->
+                        <div class="trace-item">
+                            <span class="trace-label">Transformer confidence</span>
+                            <div class="trace-value" id="traceTransformerConf">—</div>
+                        </div>
+                        
+                        <!-- Confidence Gate -->
+                        <div class="trace-item">
+                            <span class="trace-label">Confidence gate decision</span>
+                            <div class="trace-value" id="traceGateDecision">—</div>
+                        </div>
+                        
+                        <!-- Fallback -->
+                        <div class="trace-item">
+                            <span class="trace-label">Fallback used</span>
+                            <div class="trace-value" id="traceFallback">—</div>
+                        </div>
+                        
+                        <!-- Fallback Tier -->
+                        <div class="trace-item">
+                            <span class="trace-label">Fallback tier</span>
+                            <div class="trace-value" id="traceFallbackTier">—</div>
+                        </div>
+                        
+                        <!-- Escalation -->
+                        <div class="trace-item">
+                            <span class="trace-label">Escalation triggered</span>
+                            <div class="trace-value" id="traceEscalation">—</div>
+                        </div>
+                        
+                        <!-- Entropy -->
+                        <div class="trace-item">
+                            <span class="trace-label">Entropy</span>
+                            <div class="trace-value" id="traceEntropy">—</div>
+                        </div>
+                        
+                        <!-- Tokenization Coverage -->
+                        <div class="trace-item">
+                            <span class="trace-label">Tokenization coverage</span>
+                            <div class="trace-value" id="traceCoverage">—</div>
+                        </div>
+                        
+                        <!-- Degraded Mode -->
+                        <div class="trace-item">
+                            <span class="trace-label">Degraded mode</span>
+                            <div class="trace-value" id="traceDegraded">—</div>
+                        </div>
+                        
+                        <!-- Processing Time -->
+                        <div class="trace-item">
+                            <span class="trace-label">Processing time</span>
+                            <div class="trace-value" id="traceProcessingTime">—</div>
+                        </div>
+                    </div>
+                    
+                    <div class="raw-json-container">
+                        <button class="copy-button" id="copyJsonBtn" type="button">
+                            Copy raw JSON
+                        </button>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Footer -->
+        <footer class="app-footer">
+            <div class="footer-content">
+                <span class="footer-text">MUST++ v1.0.0</span>
+                <span class="footer-separator">|</span>
+                <span class="footer-text">Languages: Tamil, Hindi, English</span>
+                <span class="footer-separator">|</span>
+                <span class="footer-text">Labels: neutral, offensive, hate</span>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Raw JSON Modal (for copying) -->
+    <div class="modal hidden" id="jsonModal" role="dialog" aria-labelledby="jsonModalTitle" aria-modal="true">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="jsonModalTitle">Raw Response</h3>
+                <button class="modal-close" id="closeJsonModal" aria-label="Close">&times;</button>
+            </div>
+            <pre class="json-output" id="jsonOutput"></pre>
+            <div class="modal-actions">
+                <button class="copy-button" id="copyModalJsonBtn">Copy to clipboard</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- History Panel (Slide-out) -->
+    <aside class="history-panel" id="historyPanel" aria-label="Analysis history">
+        <div class="history-header">
+            <span class="history-title">Analysis History</span>
+            <div class="history-actions">
+                <button class="history-btn" id="clearHistoryBtn" title="Clear all">Clear</button>
+                <button class="history-btn close" id="closeHistoryBtn" aria-label="Close">&times;</button>
+            </div>
+        </div>
+        <div class="history-list" id="historyList">
+            <div class="history-empty" id="historyEmpty">
+                <span class="history-empty-icon">📝</span>
+                <span class="history-empty-text">No analysis history yet.<br>Analyzed texts will appear here.</span>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Keyboard Shortcuts Panel -->
+    <div class="shortcuts-panel hidden" id="shortcutsPanel">
+        <div class="shortcuts-header">
+            <span class="shortcuts-title">Keyboard Shortcuts</span>
+            <button class="shortcuts-close" id="closeShortcuts" aria-label="Close">&times;</button>
+        </div>
+        <div class="shortcuts-list">
+            <div class="shortcut-item">
+                <span class="shortcut-desc">Analyze text</span>
+                <div class="shortcut-keys"><kbd>Ctrl</kbd><kbd>Enter</kbd></div>
+            </div>
+            <div class="shortcut-item">
+                <span class="shortcut-desc">Focus input</span>
+                <div class="shortcut-keys"><kbd>/</kbd></div>
+            </div>
+            <div class="shortcut-item">
+                <span class="shortcut-desc">Clear input</span>
+                <div class="shortcut-keys"><kbd>Esc</kbd></div>
+            </div>
+            <div class="shortcut-item">
+                <span class="shortcut-desc">Toggle dark mode</span>
+                <div class="shortcut-keys"><kbd>Ctrl</kbd><kbd>D</kbd></div>
+            </div>
+            <div class="shortcut-item">
+                <span class="shortcut-desc">Open history</span>
+                <div class="shortcut-keys"><kbd>Ctrl</kbd><kbd>H</kbd></div>
+            </div>
+            <div class="shortcut-item">
+                <span class="shortcut-desc">Copy result</span>
+                <div class="shortcut-keys"><kbd>Ctrl</kbd><kbd>C</kbd></div>
+            </div>
+            <div class="shortcut-item">
+                <span class="shortcut-desc">Show shortcuts</span>
+                <div class="shortcut-keys"><kbd>?</kbd></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Keyboard Shortcuts Hint -->
+    <div class="shortcuts-hint" id="shortcutsHint">Press <kbd>?</kbd> for shortcuts</div>
+
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script src="app.js"></script>
+</body>
+</html>

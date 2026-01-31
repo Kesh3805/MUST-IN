@@ -1,0 +1,18 @@
+#!/bin/sh
+# 🐶 MUST++ Pre-push Hook
+# Runs tests before pushing to remote
+
+echo "🧪 Running pre-push tests..."
+
+# Run quick validation tests
+echo "  → Running golden test suite..."
+python tests/test_golden_suite.py 2>/dev/null
+
+if [ $? -ne 0 ]; then
+    echo ""
+    echo "❌ Tests failed! Push aborted."
+    echo "Please fix failing tests before pushing."
+    exit 1
+fi
+
+echo "✅ All tests passed! Pushing..."

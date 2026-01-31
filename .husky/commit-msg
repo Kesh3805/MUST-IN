@@ -1,0 +1,31 @@
+#!/bin/sh
+# 🐶 MUST++ Commit Message Hook
+# Enforces conventional commit format
+
+echo "📝 Validating commit message..."
+
+commit_msg=$(cat "$1")
+
+# Check for conventional commit format
+if ! echo "$commit_msg" | grep -qE "^(feat|fix|docs|style|refactor|test|chore|perf|ci|build|revert)(\(.+\))?: .{1,}$"; then
+    echo ""
+    echo "❌ Invalid commit message format!"
+    echo ""
+    echo "Please use conventional commits:"
+    echo "  feat: add new feature"
+    echo "  fix: resolve bug"
+    echo "  docs: update documentation"
+    echo "  style: formatting changes"
+    echo "  refactor: code restructure"
+    echo "  test: add/update tests"
+    echo "  chore: maintenance tasks"
+    echo ""
+    echo "Examples:"
+    echo "  feat: add Tamil lexicon support"
+    echo "  fix(api): handle empty text input"
+    echo "  docs: update README badges"
+    echo ""
+    exit 1
+fi
+
+echo "✅ Commit message is valid!"

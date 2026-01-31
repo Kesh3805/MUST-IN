@@ -1,0 +1,102 @@
+{
+  "timestamp": "2026-01-31T19:16:53.719793",
+  "steps": {
+    "transformer_integration": {
+      "passed": true,
+      "degraded_mode_works": true,
+      "safety_mode_works": true
+    },
+    "end_to_end": {
+      "passed": true,
+      "total_cases": 23,
+      "passed_cases": 20,
+      "failed_cases": 3,
+      "hate_missed": 0
+    },
+    "adversarial": {
+      "passed": false,
+      "categories": {
+        "obfuscated_at": {
+          "caught": 0,
+          "missed": 1
+        },
+        "obfuscated_number": {
+          "caught": 0,
+          "missed": 1
+        },
+        "leetspeak": {
+          "caught": 0,
+          "missed": 1
+        },
+        "sarcasm_emoji": {
+          "caught": 0,
+          "missed": 1
+        },
+        "threat_emoji": {
+          "caught": 0,
+          "missed": 1
+        },
+        "mixed_script": {
+          "caught": 1,
+          "missed": 1
+        },
+        "implicit": {
+          "caught": 1,
+          "missed": 0
+        },
+        "implicit_hindi": {
+          "caught": 1,
+          "missed": 0
+        },
+        "short": {
+          "caught": 2,
+          "missed": 0
+        }
+      },
+      "total_caught": 5,
+      "total_missed": 6
+    },
+    "explainability": {
+      "passed": true,
+      "issues": []
+    },
+    "metrics": {
+      "passed": true,
+      "hate_fnr": 0.0,
+      "hate_recall": 1.0,
+      "fallback_rate": 1.0,
+      "blind_spots": [
+        "low_offensive_recall",
+        "high_fallback",
+        "low_tokenization"
+      ]
+    },
+    "deployment_hardening": {
+      "passed": true,
+      "checks": {
+        "logging_enabled": true,
+        "has_degraded_mode": true,
+        "has_force_safety": true,
+        "has_disable_transformer": true,
+        "logs_populated": true,
+        "output_validates": true
+      }
+    },
+    "system_contract": {
+      "passed": true,
+      "checks": {
+        "label": true,
+        "confidence": true,
+        "languages_detected": true,
+        "fallback_used": true,
+        "escalation_triggered": true,
+        "key_harm_tokens": true,
+        "explanation": true,
+        "label_valid": true,
+        "confidence_valid": true
+      }
+    }
+  },
+  "passed": true,
+  "summary": "Failed steps: adversarial"
+}

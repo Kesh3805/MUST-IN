@@ -1,22 +1,47 @@
 {
-  "name": "must-in",
+  "name": "must-plus-plus",
+  "version": "1.0.0",
   "private": true,
-  "description": "MUST-IN collaboration tooling",
+  "description": "🛡️ MUST++ Multilingual Hate Speech Detection System",
+  "author": "MUST++ Team",
+  "license": "MIT",
   "scripts": {
-    "prepare": "husky install",
-    "lint": "ruff check .",
-    "format": "ruff format . && black . && isort .",
-    "lint-staged": "lint-staged"
+    "prepare": "husky",
+    "lint": "echo '🔍 Linting...' && ruff check .",
+    "format": "echo '✨ Formatting...' && ruff format . && black . && isort .",
+    "lint:fix": "ruff check --fix . && black . && isort .",
+    "test": "python -m pytest tests/ -v",
+    "test:golden": "python tests/test_golden_suite.py",
+    "test:api": "python api/test_api.py",
+    "start": "python api/app_lite.py",
+    "start:full": "python api/app.py"
   },
   "devDependencies": {
-    "husky": "^9.0.11",
+    "husky": "^9.1.0",
     "lint-staged": "^15.2.0"
   },
   "lint-staged": {
     "*.py": [
       "ruff check --fix",
+      "ruff format",
       "black",
       "isort"
+    ],
+    "*.{json,md,yml,yaml}": [
+      "prettier --write"
     ]
-  }
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "keywords": [
+    "hate-speech-detection",
+    "multilingual",
+    "nlp",
+    "machine-learning",
+    "explainable-ai",
+    "tamil",
+    "hindi",
+    "safety"
+  ]
 }
