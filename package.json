@@ -1,0 +1,22 @@
+{
+  "name": "must-in",
+  "private": true,
+  "description": "MUST-IN collaboration tooling",
+  "scripts": {
+    "prepare": "husky install",
+    "lint": "ruff check .",
+    "format": "ruff format . && black . && isort .",
+    "lint-staged": "lint-staged"
+  },
+  "devDependencies": {
+    "husky": "^9.0.11",
+    "lint-staged": "^15.2.0"
+  },
+  "lint-staged": {
+    "*.py": [
+      "ruff check --fix",
+      "black",
+      "isort"
+    ]
+  }
+}

@@ -42,6 +42,17 @@ MUST-IN/
 pip install -r requirements.txt
 ```
 
+### 1b. Install Dev Tools (Collaboration)
+
+This repo uses Husky + lint-staged for consistent formatting before commits.
+
+```bash
+pip install -r requirements-dev.txt
+npm install
+```
+
+This will install Git hooks and run formatting/linting on staged Python files.
+
 **Note**: You may need to install PyTorch specific to your CUDA version from [pytorch.org](https://pytorch.org).
 
 ### 2. Verify Installation

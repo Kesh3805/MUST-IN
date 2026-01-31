@@ -27,6 +27,17 @@ All core features have been implemented and tested:
 python main.py
 ```
 
+## 🤝 Collaboration Setup (Husky + lint-staged)
+
+Install dev tooling and Git hooks:
+
+```bash
+pip install -r requirements-dev.txt
+npm install
+```
+
+Staged Python files will be automatically formatted and linted on commit.
+
 ### 2. Run with Model Saving
 ```bash
 python main.py --save-models --generate-report
