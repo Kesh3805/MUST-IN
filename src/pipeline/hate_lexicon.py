@@ -225,11 +225,22 @@ class HateLexicon:
         # ============================================
         self.dehumanization_patterns = [
             r'\b(they are|these|those|all)\s*(are)?\s*(animals?|vermin|cockroach|rat|pig|dog|insect)',
-            r'\b(sub-?human|less than human|not human)',
+            r'\b(are|like)\s+(cockroach|vermin|animal|rat|pig|dog|insect)e?s?\b',
+            r'\b(sub-?human|less than human|not human|subhuman)',
             r'\b(breed like|breeding like)\s*(animals?|rats?|pigs?)',
             r'\b(infestation|plague|disease)\b.*\b(of|by)\s*(them|muslims?|hindus?)',
             r'\b(go back|leave|get out).*\b(country|india|pakistan)',
+            r'\blike\s+animals?\b',
+            r'\bsubhuman\s+creatures?\b',
+            r'\bcockroaches?\b',
+            r'\bvermin\b',
         ]
+        
+        # ============================================
+        # EMOJI THREAT/MOCKERY PATTERNS
+        # ============================================
+        self.threat_emojis = ['🔪', '🗡️', '⚔️', '🔫', '💣', '💀', '☠️', '🪓', '🏹']
+        self.mockery_emojis = ['🤡', '🃏', '😂', '🤣', '😹', '🙃']
         
         # ============================================
         # VIOLENCE PATTERNS
@@ -280,6 +291,10 @@ class HateLexicon:
             # Gender/sexuality
             r'\b(women|girls|ladies|females)\b',
             r'\b(lgbtq?|gay|lesbian|trans|homosexual)\b',
+            
+            # Generic minority references
+            r'\b(minorities?|immigrants?|refugees?|migrants?|outsiders?)\b',
+            r'\b(these people|those people|such people|them all)\b',
         ]
     
     def _compile_patterns(self):
@@ -295,6 +310,46 @@ class HateLexicon:
         self.identity_regex = [
             re.compile(p, re.IGNORECASE | re.UNICODE) 
             for p in self.identity_patterns
+        ]
+        
+        # ============================================
+        # OBFUSCATION PATTERNS (leetspeak, symbols)
+        # ============================================
+        self.obfuscation_patterns = [
+            # Hindi slurs with common obfuscations
+            (r'\bk[@4]tu[a4@e]\b', 'katua', SeverityLevel.CRITICAL),
+            (r'\bk[a4@]tu[e3]\b', 'katue', SeverityLevel.CRITICAL),
+            (r'\bchut[1i!]y[a4@]\b', 'chutiya', SeverityLevel.HIGH),
+            (r'\bch[u0o]t[1i!]?y?[a4@]?\b', 'chutiya', SeverityLevel.HIGH),
+            (r'\bm[a4@]d[a4@]rch[o0]d\b', 'madarchod', SeverityLevel.CRITICAL),
+            (r'\bbh[e3]nch[o0]d\b', 'bhenchod', SeverityLevel.CRITICAL),
+            (r'\bg[a4@]ndu\b', 'gaandu', SeverityLevel.HIGH),
+            (r'\br[a4@]nd[i1!]\b', 'randi', SeverityLevel.HIGH),
+            (r'\bch[a4@]m[a4@]r\b', 'chamar', SeverityLevel.CRITICAL),
+            (r'\bbh[a4@]ng[i1!]\b', 'bhangi', SeverityLevel.CRITICAL),
+            # English obfuscations
+            (r'\bk[i1!]ll\b', 'kill', SeverityLevel.HIGH),
+            (r'\bd[i1!]e\b', 'die', SeverityLevel.HIGH),
+            (r'\bf[u\*]ck\b', 'fuck', SeverityLevel.MEDIUM),
+            (r'\bb[i1!]tch\b', 'bitch', SeverityLevel.MEDIUM),
+        ]
+        self.obfuscation_regex = [
+            (re.compile(p, re.IGNORECASE | re.UNICODE), orig, sev)
+            for p, orig, sev in self.obfuscation_patterns
+        ]
+        
+        # ============================================
+        # ENGLISH INSULT PATTERNS
+        # ============================================
+        self.english_insult_patterns = [
+            (r'\b(stupid|dumb|idiot|moron|fool|imbecile|retard)\b', SeverityLevel.MEDIUM),
+            (r'\b(trash|garbage|worthless|pathetic|disgusting)\b', SeverityLevel.MEDIUM),
+            (r'\b(go away|get lost|shut up|piss off)\b', SeverityLevel.LOW),
+            (r'\b(loser|failure|joke|clown)\b', SeverityLevel.LOW),
+        ]
+        self.english_insult_regex = [
+            (re.compile(p, re.IGNORECASE | re.UNICODE), sev)
+            for p, sev in self.english_insult_patterns
         ]
     
     def lookup(self, token: str, language: str = None) -> List[LexiconEntry]:
@@ -369,28 +424,6 @@ class HateLexicon:
         
         return matches
     
-    def get_harm_tokens(self, text: str) -> List[Dict]:
-        """
-        Get all harm-contributing tokens from text.
-        
-        Returns:
-            List of dicts with token info
-        """
-        matches = self.scan_text(text)
-        harm_tokens = []
-        
-        for token, entry in matches:
-            harm_tokens.append({
-                'token': token,
-                'original': entry.term,
-                'category': entry.category.value,
-                'severity': entry.severity.value,
-                'language': entry.language,
-                'is_identity_targeting': entry.is_identity_targeting
-            })
-        
-        return harm_tokens
-    
     def check_dehumanization(self, text: str) -> List[str]:
         """Check for dehumanization patterns."""
         matches = []
@@ -408,6 +441,14 @@ class HateLexicon:
             if found:
                 matches.extend([m if isinstance(m, str) else ' '.join(m) for m in found])
         return matches
+    
+    def check_threat_emojis(self, text: str) -> List[str]:
+        """Check for threat/weapon emojis."""
+        return [e for e in self.threat_emojis if e in text]
+    
+    def check_mockery_emojis(self, text: str) -> List[str]:
+        """Check for mockery/sarcasm emojis."""
+        return [e for e in self.mockery_emojis if e in text]
     
     def check_identity_targeting(self, text: str) -> List[str]:
         """Check for identity group mentions."""
@@ -430,6 +471,83 @@ class HateLexicon:
         
         max_sev = max(entry.severity.value for _, entry in matches)
         return SeverityLevel(max_sev)
+
+    def check_obfuscated_slurs(self, text: str) -> List[Tuple[str, str, SeverityLevel]]:
+        """
+        Check for obfuscated slurs using leetspeak and symbol substitution.
+        
+        Returns:
+            List of (matched_text, original_slur, severity) tuples
+        """
+        matches = []
+        for regex, orig, sev in self.obfuscation_regex:
+            found = regex.findall(text)
+            if found:
+                for match in found:
+                    matches.append((match, orig, sev))
+        return matches
+    
+    def check_english_insults(self, text: str) -> List[Tuple[str, SeverityLevel]]:
+        """
+        Check for English insults and offensive language.
+        
+        Returns:
+            List of (matched_text, severity) tuples
+        """
+        matches = []
+        for regex, sev in self.english_insult_regex:
+            found = regex.findall(text)
+            if found:
+                for match in found:
+                    matches.append((match, sev))
+        return matches
+    
+    def get_harm_tokens(self, text: str) -> List[Dict]:
+        """
+        Get all harm-contributing tokens from text.
+        Includes obfuscated slurs and English insults.
+        
+        Returns:
+            List of dicts with token info
+        """
+        matches = self.scan_text(text)
+        harm_tokens = []
+        
+        for token, entry in matches:
+            harm_tokens.append({
+                'token': token,
+                'original': entry.term,
+                'category': entry.category.value,
+                'severity': entry.severity.value,
+                'language': entry.language,
+                'is_identity_targeting': entry.is_identity_targeting
+            })
+        
+        # Add obfuscated slurs
+        obfuscated = self.check_obfuscated_slurs(text)
+        for match, orig, sev in obfuscated:
+            harm_tokens.append({
+                'token': match,
+                'original': orig,
+                'category': 'SLUR',
+                'severity': sev.value,
+                'language': 'Mixed',
+                'is_identity_targeting': orig in ['katua', 'katue', 'chamar', 'bhangi']
+            })
+        
+        # Add English insults
+        insults = self.check_english_insults(text)
+        for match, sev in insults:
+            harm_tokens.append({
+                'token': match,
+                'original': match,
+                'category': 'SLUR',
+                'severity': sev.value,
+                'language': 'English',
+                'is_identity_targeting': False
+            })
+        
+        return harm_tokens
     
     def has_critical_content(self, text: str) -> Tuple[bool, List[str]]:
         """
@@ -459,5 +577,21 @@ class HateLexicon:
         critical = [t for t, e in matches if e.severity == SeverityLevel.CRITICAL]
         if critical:
             reasons.append(f"Critical slurs: {critical[:5]}")
+        
+        # Check for obfuscated critical slurs
+        obfuscated = self.check_obfuscated_slurs(text)
+        critical_obfuscated = [m for m, o, s in obfuscated if s == SeverityLevel.CRITICAL]
+        if critical_obfuscated:
+            reasons.append(f"Obfuscated critical slurs: {critical_obfuscated[:5]}")
+        
+        # Check for threat emojis with identity targeting
+        threat_emojis = self.check_threat_emojis(text)
+        if threat_emojis and identity:
+            reasons.append(f"Threat emojis {threat_emojis[:3]} targeting {identity[:2]}")
+        
+        # Check for mockery emojis with identity targeting
+        mockery_emojis = self.check_mockery_emojis(text)
+        if mockery_emojis and identity:
+            reasons.append(f"Mockery emojis {mockery_emojis[:3]} targeting {identity[:2]}")
         
         return len(reasons) > 0, reasons

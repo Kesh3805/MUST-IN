@@ -149,6 +149,126 @@
         "vectorizer": "TFIDF",
         "model_type": "rf"
       }
+    },
+    {
+      "timestamp": "2026-01-31T21:27:49.829221",
+      "model_name": "MNB_Count",
+      "metrics": {
+        "accuracy": 0.4,
+        "f1_score": 0.3076923076923077,
+        "precision": 0.25,
+        "recall": 0.4,
+        "roc_auc": 0.425
+      },
+      "config": {
+        "vectorizer": "Count",
+        "model_type": "nb"
+      }
+    },
+    {
+      "timestamp": "2026-01-31T21:27:51.364243",
+      "model_name": "GNB_Count",
+      "metrics": {
+        "accuracy": 0.3,
+        "f1_score": 0.26285714285714284,
+        "precision": 0.33571428571428574,
+        "recall": 0.3,
+        "roc_auc": 0.5541071428571429
+      },
+      "config": {
+        "vectorizer": "Count",
+        "model_type": "gnb"
+      }
+    },
+    {
+      "timestamp": "2026-01-31T21:27:51.714997",
+      "model_name": "SVM_Count",
+      "metrics": {
+        "accuracy": 0.5,
+        "f1_score": 0.44102564102564107,
+        "precision": 0.45,
+        "recall": 0.5,
+        "roc_auc": 0.18321428571428572
+      },
+      "config": {
+        "vectorizer": "Count",
+        "model_type": "svm"
+      }
+    },
+    {
+      "timestamp": "2026-01-31T21:27:52.473869",
+      "model_name": "RF_Count",
+      "metrics": {
+        "accuracy": 0.3,
+        "f1_score": 0.2519480519480519,
+        "precision": 0.325,
+        "recall": 0.3,
+        "roc_auc": 0.6214285714285714
+      },
+      "config": {
+        "vectorizer": "Count",
+        "model_type": "rf"
+      }
+    },
+    {
+      "timestamp": "2026-01-31T21:27:52.748488",
+      "model_name": "MNB_TFIDF",
+      "metrics": {
+        "accuracy": 0.5,
+        "f1_score": 0.3333333333333333,
+        "precision": 0.25,
+        "recall": 0.5,
+        "roc_auc": 0.47000000000000003
+      },
+      "config": {
+        "vectorizer": "TFIDF",
+        "model_type": "nb"
+      }
+    },
+    {
+      "timestamp": "2026-01-31T21:27:53.039455",
+      "model_name": "GNB_TFIDF",
+      "metrics": {
+        "accuracy": 0.3,
+        "f1_score": 0.26285714285714284,
+        "precision": 0.33571428571428574,
+        "recall": 0.3,
+        "roc_auc": 0.5585714285714285
+      },
+      "config": {
+        "vectorizer": "TFIDF",
+        "model_type": "gnb"
+      }
+    },
+    {
+      "timestamp": "2026-01-31T21:27:53.319787",
+      "model_name": "SVM_TFIDF",
+      "metrics": {
+        "accuracy": 0.5,
+        "f1_score": 0.3333333333333333,
+        "precision": 0.25,
+        "recall": 0.5,
+        "roc_auc": 0.45
+      },
+      "config": {
+        "vectorizer": "TFIDF",
+        "model_type": "svm"
+      }
+    },
+    {
+      "timestamp": "2026-01-31T21:27:53.827143",
+      "model_name": "RF_TFIDF",
+      "metrics": {
+        "accuracy": 0.3,
+        "f1_score": 0.2519480519480519,
+        "precision": 0.325,
+        "recall": 0.3,
+        "roc_auc": 0.5585714285714285
+      },
+      "config": {
+        "vectorizer": "TFIDF",
+        "model_type": "rf"
+      }
     }
   ]
 }

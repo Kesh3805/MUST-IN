@@ -37089,25 +37089,25 @@
 /***/ })
 /******/ ]);
 //# sourceMappingURL=bundle.js.map </script></head><body>
-        <div class="lime top_div" id="top_divLOQET7EYPODRS0J"></div>
+        <div class="lime top_div" id="top_divOAW26Y64YW0RCM7"></div>
         
         <script>
-        var top_div = d3.select('#top_divLOQET7EYPODRS0J').classed('lime top_div', true);
+        var top_div = d3.select('#top_divOAW26Y64YW0RCM7').classed('lime top_div', true);
         
             var pp_div = top_div.append('div')
                                 .classed('lime predict_proba', true);
             var pp_svg = pp_div.append('svg').style('width', '100%');
-            var pp = new lime.PredictProba(pp_svg, ["Neutral", "Offensive", "Hate"], [0.5088317039259403, 0.34152547976315145, 0.14964281631090845]);
+            var pp = new lime.PredictProba(pp_svg, ["neutral", "offensive", "hate"], [0.5377371418899836, 0.27103589740636963, 0.19122696070364664]);
             
         
         var exp_div;
-            var exp = new lime.Explanation(["Neutral", "Offensive", "Hate"]);
+            var exp = new lime.Explanation(["neutral", "offensive", "hate"]);
         
                 exp_div = top_div.append('div').classed('lime explanation', true);
-                exp.show([["oru", 0.10031832339541877], ["aalu", -8.066720014438512e-05], ["Indha", -7.847067781510928e-05], ["fraud", -7.328693703493424e-05]], 1, exp_div);
+                exp.show([["oru", 0.03397843106030506], ["Indha", -2.7423193068938554e-05], ["aalu", -2.6116490954980102e-05], ["fraud", -2.3792007348728202e-05]], 1, exp_div);
                 
         var raw_div = top_div.append('div');
-            exp.show_raw_text([["oru", 11, 0.10031832339541877], ["aalu", 6, -8.066720014438512e-05], ["Indha", 0, -7.847067781510928e-05], ["fraud", 15, -7.328693703493424e-05]], 1, "Indha aalu oru fraud", raw_div, true);
+            exp.show_raw_text([["oru", 11, 0.03397843106030506], ["Indha", 0, -2.7423193068938554e-05], ["aalu", 6, -2.6116490954980102e-05], ["fraud", 15, -2.3792007348728202e-05]], 1, "Indha aalu oru fraud", raw_div, true);
             
         </script>
         </body></html>

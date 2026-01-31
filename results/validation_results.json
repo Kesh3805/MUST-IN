@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-01-31T19:16:53.719793",
+  "timestamp": "2026-01-31T22:08:40.011406",
   "steps": {
     "transformer_integration": {
       "passed": true,
@@ -9,32 +9,32 @@
     "end_to_end": {
       "passed": true,
       "total_cases": 23,
-      "passed_cases": 20,
-      "failed_cases": 3,
+      "passed_cases": 22,
+      "failed_cases": 1,
       "hate_missed": 0
     },
     "adversarial": {
-      "passed": false,
+      "passed": true,
       "categories": {
         "obfuscated_at": {
-          "caught": 0,
-          "missed": 1
+          "caught": 1,
+          "missed": 0
         },
         "obfuscated_number": {
-          "caught": 0,
-          "missed": 1
+          "caught": 1,
+          "missed": 0
         },
         "leetspeak": {
           "caught": 0,
           "missed": 1
         },
         "sarcasm_emoji": {
-          "caught": 0,
-          "missed": 1
+          "caught": 1,
+          "missed": 0
         },
         "threat_emoji": {
-          "caught": 0,
-          "missed": 1
+          "caught": 1,
+          "missed": 0
         },
         "mixed_script": {
           "caught": 1,
@@ -53,8 +53,8 @@
           "missed": 0
         }
       },
-      "total_caught": 5,
-      "total_missed": 6
+      "total_caught": 9,
+      "total_missed": 2
     },
     "explainability": {
       "passed": true,
@@ -66,7 +66,6 @@
       "hate_recall": 1.0,
       "fallback_rate": 1.0,
       "blind_spots": [
-        "low_offensive_recall",
         "high_fallback",
         "low_tokenization"
       ]
@@ -98,5 +97,5 @@
     }
   },
   "passed": true,
-  "summary": "Failed steps: adversarial"
+  "summary": "All validation steps passed"
 }

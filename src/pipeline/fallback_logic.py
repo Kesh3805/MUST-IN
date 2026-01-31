@@ -461,6 +461,61 @@ class FallbackManager:
                 identity_groups_detected=identity_groups
             )
         
+        # Check for English insults if no lexicon matches
+        english_insults = self.lexicon.check_english_insults(text)
+        if english_insults:
+            insult_tokens = [match for match, sev in english_insults]
+            reasoning_parts.append(
+                f"English insults detected: {insult_tokens[:3]}"
+            )
+            # Add to harm tokens for output
+            for match, sev in english_insults:
+                harm_tokens.append({
+                    'token': match,
+                    'original': match,
+                    'category': 'SLUR',
+                    'severity': sev.value,
+                    'language': 'English',
+                    'is_identity_targeting': False
+                })
+            return FallbackResult(
+                tier_used=FallbackTier.TIER_3_SAFETY,
+                prediction=PredictionLabel.OFFENSIVE,
+                confidence=0.70,
+                harm_tokens=harm_tokens,
+                reasoning="; ".join(reasoning_parts),
+                escalation_triggered=False,
+                identity_groups_detected=identity_groups
+            )
+        
+        # Check for threat emojis
+        threat_emojis = self.lexicon.check_threat_emojis(text)
+        if threat_emojis:
+            reasoning_parts.append(f"Threat emojis detected: {threat_emojis[:3]}")
+            return FallbackResult(
+                tier_used=FallbackTier.TIER_3_SAFETY,
+                prediction=PredictionLabel.OFFENSIVE,
+                confidence=0.72,
+                harm_tokens=harm_tokens,
+                reasoning="; ".join(reasoning_parts),
+                escalation_triggered=False,
+                identity_groups_detected=identity_groups
+            )
+        
+        # Check for mockery emojis with identity groups
+        mockery_emojis = self.lexicon.check_mockery_emojis(text)
+        if mockery_emojis and identity_groups:
+            reasoning_parts.append(f"Mockery emojis {mockery_emojis[:3]} targeting {identity_groups[:2]}")
+            return FallbackResult(
+                tier_used=FallbackTier.TIER_3_SAFETY,
+                prediction=PredictionLabel.OFFENSIVE,
+                confidence=0.75,
+                harm_tokens=harm_tokens,
+                reasoning="; ".join(reasoning_parts),
+                escalation_triggered=False,
+                identity_groups_detected=identity_groups
+            )
+        
         # Dismissive patterns without slurs
         if has_dismissive:
             reasoning_parts.append("Dismissive/derogatory patterns detected")

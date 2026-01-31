@@ -59,6 +59,9 @@ def main():
     if after != before:
         print(f"Removed duplicates: {before - after}")
     
+    # Normalize labels to lowercase for consistent mapping
+    df['label'] = df['label'].str.lower()
+    
     # Label Encoding
     label_map = {label: idx for idx, label in enumerate(LABELS)}
     df['label_id'] = df['label'].map(label_map)

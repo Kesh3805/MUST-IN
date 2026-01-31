@@ -206,6 +206,11 @@ class MUSTPlusPipeline:
             device: 'cuda', 'cpu', or None for auto-detect
             config: Runtime configuration options
         """
+        # Handle case where PipelineConfig is passed as first positional argument
+        if isinstance(model_name, PipelineConfig):
+            config = model_name
+            model_name = "bert-base-multilingual-cased"
+        
         # Runtime config
         self.config = config or PipelineConfig()
         
@@ -914,6 +919,19 @@ class MUSTPlusPipeline:
         if fallback_result.escalation_triggered:
             explanation_parts.append("ESCALATION triggered by rule-based safety checks.")
         
+        # Build rejection reasons based on final label
+        rejection_reasons = {"transformer": "Model unavailable or disabled"}
+        final_label = fallback_result.prediction.value
+        if final_label == "hate":
+            rejection_reasons["neutral"] = "Harm tokens and/or escalation triggers detected"
+            rejection_reasons["offensive"] = "Critical severity or identity-targeting content detected"
+        elif final_label == "offensive":
+            rejection_reasons["neutral"] = "Offensive language or harm tokens detected"
+            rejection_reasons["hate"] = "No critical slurs or identity targeting detected"
+        else:
+            rejection_reasons["offensive"] = "No significant harm indicators detected"
+            rejection_reasons["hate"] = "No hate speech markers detected"
+        
         output = MUSTPlusOutput(
             label=fallback_result.prediction.value,
             confidence=fallback_result.confidence,
@@ -929,7 +947,7 @@ class MUSTPlusPipeline:
             transformer_confidence=0.0,
             fallback_tier=fallback_result.tier_used.value,
             identity_groups_detected=identity_groups,
-            rejection_reasons={"transformer": "Model unavailable or disabled"},
+            rejection_reasons=rejection_reasons,
             entropy=0.0,
             tokenization_coverage=0.0,
             degraded_mode=True
