@@ -1,17 +1,27 @@
 # MUST++ Frontend
 
-Operator-grade UI for multilingual hate speech detection.
+Operator-grade UI for multilingual hate speech detection with full support for **Tamil**, **Hindi**, **English**, and code-mixed text.
 
-## Quick Start
+## 🚀 Quick Start
 
-### Option 1: Run the batch script (Windows)
-```
+### Option 1: Run the batch script (Windows) - RECOMMENDED
+```bash
 scripts\start_server.bat
 ```
+This will prompt you to choose between:
+- **[1] Lightweight mode** - Quick startup (2-3 seconds), uses fallback classifiers
+- **[2] Full pipeline mode** - Includes transformer models (30-60 seconds startup)
 
 ### Option 2: Run directly with Python
+
+**Lightweight mode (fast startup):**
 ```bash
 python api/app_lite.py
+```
+
+**Full pipeline mode (with transformers):**
+```bash
+python api/app.py
 ```
 
 Then open your browser to: **http://localhost:8080**
@@ -100,7 +110,70 @@ curl -X POST http://localhost:8080/analyze \
 
 ## Testing
 
-Run the test suite:
+### Multilingual Test Examples
+
+The system supports **Tamil**, **Hindi**, **English**, and **code-mixed** text. Test with these examples:
+
+#### English Examples
+```
+Neutral: "This is a test message"
+Offensive: "You are an idiot"
+```
+
+#### Hindi Examples (Devanagari script)
+```
+Neutral: "यह एक परीक्षण संदेश है"
+Offensive: "तुम बेवकूफ हो"
+```
+
+#### Tamil Examples (Tamil script)
+```
+Neutral: "இது ஒரு சோதனை செய்தி"
+Offensive: "நீ முட்டாள்"
+```
+
+#### Hinglish (Romanized Hindi)
+```
+Neutral: "Kaise ho aap?"
+Offensive: "Tu pagal hai"
+```
+
+#### Tanglish (Romanized Tamil)
+```
+Neutral: "Naan Chennai la irukken"
+Offensive: "Nee ooru loosu"
+```
+
+#### Code-Mixed Examples
+```
+Mixed English-Hindi: "You are a बेवकूफ person"
+Mixed English-Tamil: "This is வேஸ்ட் content"
+```
+
+### Testing Instructions
+
+1. **Start the server**:
+   ```bash
+   scripts\\start_server.bat
+   ```
+   Choose option [1] for quick testing or [2] for full pipeline.
+
+2. **Open browser**: Navigate to http://localhost:8080
+
+3. **Enter test text**: Copy any example above into the text input
+
+4. **Click "Analyze"**: The system will:
+   - Detect the script (Tamil/Devanagari/Latin/Mixed)
+   - Identify the language(s)
+   - Classify as Neutral/Offensive/Hate
+   - Show confidence score and explanation
+
+5. **Explore layers**:
+   - **Decision Layer**: See the final classification
+   - **Explanation Layer**: View detected harm tokens (if any)
+   - **System Trace**: See technical details (languages, scripts, fallback status)
+
+### Run Automated Test Suite
 ```bash
 # First, start the server in one terminal
 python api/app_lite.py

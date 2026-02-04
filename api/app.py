@@ -28,20 +28,28 @@ from src.pipeline import (
     MUSTPlusOutput, 
     PipelineConfig,
     ScriptDetector,
-    ScriptType
+    ScriptType,
+    Language
 )
+from src.utils.env import get_env_bool, get_env_str
+from src.utils.model_download import preload_models
 
 app = Flask(__name__, static_folder='../frontend', static_url_path='')
 CORS(app)
+
+# Optional: preload paper-specified transformer models
+if get_env_bool("MUST_PRELOAD_MODELS", default=False):
+    preload_models()
 
 # Initialize pipeline with config - defer model loading
 config = PipelineConfig(
     enable_logging=True,
     model_timeout_seconds=30.0,
-    disable_transformer=True  # Start in fallback mode for quick startup
+    disable_transformer=get_env_bool("MUST_DISABLE_TRANSFORMER", default=True)
 )
 
-pipeline = MUSTPlusPipeline(config=config)
+model_name = get_env_str("MUST_MODEL_NAME", default="bert-base-multilingual-cased")
+pipeline = MUSTPlusPipeline(model_name=model_name, config=config)
 script_detector = ScriptDetector()
 
 # Flag to track if we've tried to enable transformer
@@ -54,34 +62,52 @@ def detect_scripts_realtime(text: str) -> dict:
     Returns script distribution for UI display.
     """
     if not text:
-        return {"scripts": {}, "primary_script": None}
-    
-    profile = script_detector.analyze(text)
-    
-    # Convert script distribution to readable format
-    scripts = {}
-    for script_type, proportion in profile.script_distribution.items():
-        if proportion > 0.01:  # Only show significant scripts
-            script_name = script_type.value if hasattr(script_type, 'value') else str(script_type)
-            scripts[script_name] = round(proportion, 3)
-    
-    # Get primary script
-    primary = None
-    if profile.script_distribution:
-        primary_script = max(profile.script_distribution, key=profile.script_distribution.get)
-        primary = primary_script.value if hasattr(primary_script, 'value') else str(primary_script)
-    
-    return {
-        "scripts": scripts,
-        "primary_script": primary,
-        "is_mixed": len([s for s, p in scripts.items() if p > 0.1]) > 1
+        return {"scripts": {}, "primary_script": None, "is_mixed": False}
+
+    # Use MUST++ ScriptDetector output, but map into frontend-facing categories:
+    # latin | devanagari | tamil
+    profile = script_detector.detect_language_profile(text)
+
+    mass = {"latin": 0.0, "devanagari": 0.0, "tamil": 0.0}
+    total_mass = 0.0
+
+    for token_info in profile.tokens:
+        token = token_info.token or ""
+        token_mass = float(len(token)) if token else 0.0
+        if token_mass <= 0:
+            continue
+
+        total_mass += token_mass
+
+        if token_info.script == ScriptType.SCRIPT_NATIVE:
+            if token_info.language == Language.HINDI:
+                mass["devanagari"] += token_mass
+            elif token_info.language == Language.TAMIL:
+                mass["tamil"] += token_mass
+            else:
+                mass["latin"] += token_mass
+        else:
+            mass["latin"] += token_mass
+
+    if total_mass <= 0:
+        return {"scripts": {}, "primary_script": None, "is_mixed": False}
+
+    scripts = {
+        script: round(script_mass / total_mass, 3)
+        for script, script_mass in mass.items()
+        if script_mass / total_mass > 0.01
     }
+
+    primary_script = max(scripts, key=scripts.get) if scripts else None
+    is_mixed = len([s for s, p in scripts.items() if p > 0.1]) > 1
+
+    return {"scripts": scripts, "primary_script": primary_script, "is_mixed": is_mixed}
 
 
 @app.route('/')
 def index():
     """Serve the frontend."""
-    return send_from_directory('../frontend', 'index.html')
+    return send_from_directory(app.static_folder, 'index.html')
 
 
 @app.route('/health', methods=['GET'])
@@ -118,7 +144,7 @@ def get_config():
 def detect_script():
     """Real-time script detection for UI indicator."""
     data = request.get_json()
-    text = data.get('text', '')
+    text = (data or {}).get('text', '')
     
     result = detect_scripts_realtime(text)
     return jsonify(result)
@@ -182,7 +208,7 @@ def analyze():
             # === System Trace Layer ===
             "system_trace": {
                 "languages_detected": result.languages_detected,
-                "script_distribution": _format_script_distribution(result.script_distribution),
+                "script_distribution": detect_scripts_realtime(text).get("scripts", {}),
                 "is_code_mixed": result.is_code_mixed,
                 "transformer_used": not result.degraded_mode,
                 "transformer_prediction": result.transformer_prediction,
@@ -341,4 +367,5 @@ if __name__ == '__main__':
     print("Open http://localhost:8080 in your browser")
     print("=" * 60)
     
-    app.run(host='0.0.0.0', port=8080, debug=True)
+    debug = get_env_bool("MUST_API_DEBUG", default=False)
+    app.run(host='0.0.0.0', port=8080, debug=debug, use_reloader=debug)

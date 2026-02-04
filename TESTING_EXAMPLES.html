@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MUST++ Testing Examples</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            line-height: 1.6;
+            padding: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+            background: #f8fafc;
+        }
+        h1 {
+            color: #1e293b;
+            margin-bottom: 1rem;
+            font-size: 2rem;
+        }
+        .subtitle {
+            color: #64748b;
+            margin-bottom: 2rem;
+            font-size: 1.1rem;
+        }
+        .server-status {
+            background: #fff;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .status-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        .status-online { background: #10b981; }
+        .status-offline { background: #ef4444; }
+        .examples-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 1.5rem;
+        }
+        .example-card {
+            background: #fff;
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            border-left: 4px solid #3b82f6;
+        }
+        .example-card h3 {
+            color: #1e293b;
+            margin-bottom: 0.5rem;
+            font-size: 1.2rem;
+        }
+        .example-card .language {
+            display: inline-block;
+            background: #e0e7ff;
+            color: #3730a3;
+            padding: 0.25rem 0.75rem;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+        .example-text {
+            background: #f8fafc;
+            padding: 1rem;
+            border-radius: 4px;
+            margin: 0.75rem 0;
+            font-family: 'Segoe UI', sans-serif;
+            font-size: 1.05rem;
+            border: 1px solid #e2e8f0;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .example-text:hover {
+            background: #f1f5f9;
+            border-color: #3b82f6;
+        }
+        .example-text:active {
+            transform: scale(0.98);
+        }
+        .example-label {
+            font-size: 0.85rem;
+            color: #64748b;
+            font-weight: 600;
+            margin-top: 0.5rem;
+        }
+        .copy-notice {
+            position: fixed;
+            top: 2rem;
+            right: 2rem;
+            background: #10b981;
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+        }
+        .copy-notice.show {
+            opacity: 1;
+        }
+        .button {
+            display: inline-block;
+            background: #3b82f6;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: background 0.2s;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+        .button:hover {
+            background: #2563eb;
+        }
+        .button-secondary {
+            background: #64748b;
+        }
+        .button-secondary:hover {
+            background: #475569;
+        }
+        .instructions {
+            background: #fef3c7;
+            border-left: 4px solid #f59e0b;
+            padding: 1rem 1.5rem;
+            margin-bottom: 2rem;
+            border-radius: 4px;
+        }
+        .instructions strong {
+            color: #92400e;
+        }
+        .script-badge {
+            display: inline-block;
+            font-size: 0.75rem;
+            padding: 0.2rem 0.5rem;
+            border-radius: 3px;
+            font-weight: 600;
+            margin-left: 0.5rem;
+        }
+        .script-latin { background: #dbeafe; color: #1e40af; }
+        .script-devanagari { background: #fce7f3; color: #9f1239; }
+        .script-tamil { background: #d1fae5; color: #065f46; }
+        .script-mixed { background: #fef3c7; color: #92400e; }
+    </style>
+</head>
+<body>
+    <h1>🛡️ MUST++ Testing Examples</h1>
+    <p class="subtitle">Click any example below to copy it to your clipboard, then paste into the MUST++ interface</p>
+    
+    <div class="server-status">
+        <span class="status-indicator status-offline" id="statusIndicator"></span>
+        <strong id="statusText">Checking server...</strong>
+        <div style="margin-top: 0.5rem;">
+            <a href="http://localhost:8080" target="_blank" class="button">Open MUST++ Interface</a>
+            <button onclick="checkServerStatus()" class="button button-secondary" style="margin-left: 1rem;">Refresh Status</button>
+        </div>
+    </div>
+
+    <div class="instructions">
+        <strong>📋 How to test:</strong> Click any example text below to copy it. Then paste it into the MUST++ interface and click "Analyze" to see the classification.
+    </div>
+
+    <div class="examples-grid">
+        <!-- English Examples -->
+        <div class="example-card">
+            <h3>🇬🇧 English <span class="script-badge script-latin">Latin</span></h3>
+            <span class="language">Native English</span>
+            <div class="example-text" onclick="copyText(this)">This is a neutral test message</div>
+            <div class="example-label">Expected: NEUTRAL</div>
+            
+            <div class="example-text" onclick="copyText(this)" style="margin-top: 1rem;">You are being rude and offensive</div>
+            <div class="example-label">Expected: OFFENSIVE</div>
+        </div>
+
+        <!-- Hindi Examples -->
+        <div class="example-card">
+            <h3>🇮🇳 Hindi <span class="script-badge script-devanagari">Devanagari</span></h3>
+            <span class="language">Native Hindi</span>
+            <div class="example-text" onclick="copyText(this)">यह एक परीक्षण संदेश है</div>
+            <div class="example-label">Expected: NEUTRAL (This is a test message)</div>
+            
+            <div class="example-text" onclick="copyText(this)" style="margin-top: 1rem;">तुम बेवकूफ हो</div>
+            <div class="example-label">Expected: OFFENSIVE (You are foolish)</div>
+        </div>
+
+        <!-- Tamil Examples -->
+        <div class="example-card">
+            <h3>🇮🇳 Tamil <span class="script-badge script-tamil">Tamil</span></h3>
+            <span class="language">Native Tamil</span>
+            <div class="example-text" onclick="copyText(this)">இது ஒரு சோதனை செய்தி</div>
+            <div class="example-label">Expected: NEUTRAL (This is a test message)</div>
+            
+            <div class="example-text" onclick="copyText(this)" style="margin-top: 1rem;">நீ முட்டாள்</div>
+            <div class="example-label">Expected: OFFENSIVE (You are a fool)</div>
+        </div>
+
+        <!-- Hinglish Examples -->
+        <div class="example-card">
+            <h3>🔀 Hinglish <span class="script-badge script-latin">Romanized</span></h3>
+            <span class="language">Romanized Hindi</span>
+            <div class="example-text" onclick="copyText(this)">Aaj ka din bahut achha hai</div>
+            <div class="example-label">Expected: NEUTRAL (Today is a very good day)</div>
+            
+            <div class="example-text" onclick="copyText(this)" style="margin-top: 1rem;">Tu pagal hai kya</div>
+            <div class="example-label">Expected: OFFENSIVE (Are you crazy)</div>
+        </div>
+
+        <!-- Tanglish Examples -->
+        <div class="example-card">
+            <h3>🔀 Tanglish <span class="script-badge script-latin">Romanized</span></h3>
+            <span class="language">Romanized Tamil</span>
+            <div class="example-text" onclick="copyText(this)">Naan Chennai la irukken</div>
+            <div class="example-label">Expected: NEUTRAL (I am in Chennai)</div>
+            
+            <div class="example-text" onclick="copyText(this)" style="margin-top: 1rem;">Nee ooru loosu da</div>
+            <div class="example-label">Expected: OFFENSIVE (You are very stupid)</div>
+        </div>
+
+        <!-- Mixed Script Examples -->
+        <div class="example-card">
+            <h3>🌐 Code-Mixed <span class="script-badge script-mixed">Multiple Scripts</span></h3>
+            <span class="language">Multi-Script Text</span>
+            <div class="example-text" onclick="copyText(this)">This is a test with हिंदी mixed in</div>
+            <div class="example-label">Expected: NEUTRAL (English + Hindi)</div>
+            
+            <div class="example-text" onclick="copyText(this)" style="margin-top: 1rem;">You are a बेवकूफ person</div>
+            <div class="example-label">Expected: OFFENSIVE (English + Hindi insult)</div>
+            
+            <div class="example-text" onclick="copyText(this)" style="margin-top: 1rem;">This is வேஸ்ட் content only</div>
+            <div class="example-label">Expected: OFFENSIVE (English + Tamil waste)</div>
+        </div>
+
+        <!-- Long Mixed Example -->
+        <div class="example-card">
+            <h3>📝 Complex Mixed <span class="script-badge script-mixed">3 Scripts</span></h3>
+            <span class="language">Tamil + Hindi + English</span>
+            <div class="example-text" onclick="copyText(this)">I work in Chennai, मेरा office is near Marina Beach, நான் daily travel panren by train</div>
+            <div class="example-label">Expected: NEUTRAL (Mixed language sentence)</div>
+            
+            <div class="example-text" onclick="copyText(this)" style="margin-top: 1rem;">This meeting was வேஸ்ட், everyone was बेवकूफ and totally useless</div>
+            <div class="example-label">Expected: OFFENSIVE (Multi-lingual insults)</div>
+        </div>
+
+        <!-- Edge Cases -->
+        <div class="example-card">
+            <h3>🔬 Edge Cases <span class="script-badge script-mixed">Various</span></h3>
+            <span class="language">Testing Boundaries</span>
+            <div class="example-text" onclick="copyText(this)">😊 👍 🎉</div>
+            <div class="example-label">Expected: NEUTRAL (Emoji only)</div>
+            
+            <div class="example-text" onclick="copyText(this)" style="margin-top: 1rem;">123 456 789</div>
+            <div class="example-label">Expected: NEUTRAL (Numbers only)</div>
+            
+            <div class="example-text" onclick="copyText(this)" style="margin-top: 1rem;">a</div>
+            <div class="example-label">Expected: NEUTRAL (Single character)</div>
+        </div>
+    </div>
+
+    <div class="copy-notice" id="copyNotice">✓ Copied to clipboard!</div>
+
+    <script>
+        function copyText(element) {
+            const text = element.textContent;
+            navigator.clipboard.writeText(text).then(() => {
+                const notice = document.getElementById('copyNotice');
+                notice.classList.add('show');
+                setTimeout(() => notice.classList.remove('show'), 2000);
+            }).catch(err => {
+                alert('Failed to copy: ' + err);
+            });
+        }
+
+        async function checkServerStatus() {
+            const indicator = document.getElementById('statusIndicator');
+            const statusText = document.getElementById('statusText');
+            
+            statusText.textContent = 'Checking server...';
+            indicator.className = 'status-indicator status-offline';
+            
+            try {
+                const response = await fetch('http://localhost:8080/health');
+                const data = await response.json();
+                
+                if (data.status === 'healthy') {
+                    indicator.className = 'status-indicator status-online';
+                    const mode = data.degraded_mode ? 'Lightweight Mode' : 'Full Pipeline Mode';
+                    statusText.innerHTML = `<strong>Server Online</strong> - ${mode} - Languages: ${data.supported_languages.join(', ')}`;
+                } else {
+                    indicator.className = 'status-indicator status-offline';
+                    statusText.innerHTML = '<strong>Server Error</strong> - Please restart the server';
+                }
+            } catch (error) {
+                indicator.className = 'status-indicator status-offline';
+                statusText.innerHTML = '<strong>Server Offline</strong> - Run: <code>scripts\\start_server.bat</code>';
+            }
+        }
+
+        // Check status on page load
+        checkServerStatus();
+        
+        // Check status every 10 seconds
+        setInterval(checkServerStatus, 10000);
+    </script>
+</body>
+</html>

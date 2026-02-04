@@ -27,6 +27,13 @@ All core features have been implemented and tested:
 python main.py
 ```
 
+### .env Configuration (optional)
+Create or edit [.env](.env) to control transformer downloads and runtime:
+
+- MUST_PRELOAD_MODELS=true|false
+- MUST_DISABLE_TRANSFORMER=true|false
+- MUST_MODEL_NAME=bert-base-multilingual-cased|xlm-roberta-base|bert-base-multilingual-uncased
+
 ## 🤝 Collaboration Setup (Husky + lint-staged)
 
 Install dev tooling and Git hooks:
@@ -51,6 +58,11 @@ python main.py --save-models --run-uncased --generate-report
 ### 4. Run Deep Learning Models (requires GPU)
 ```bash
 python main.py --run-dl --save-models
+```
+
+### 5. Run XLM-RoBERTa (requires GPU)
+```bash
+python main.py --run-xlm --save-models
 ```
 
 ## 📊 Output Files
@@ -188,7 +200,7 @@ for model_name, score in comparison:
 5. **Continuous Training**: Implement active learning pipeline
 
 ### Long-term Goals
-1. **Additional Languages**: Expand to Urdu, Punjabi, Bengali
+1. **Additional Languages**: Expand to Bengali, Marathi, Telugu
 2. **Context Understanding**: Incorporate conversation threads
 3. **Real-time Processing**: Stream processing capabilities
 4. **Deployment**: Docker, Kubernetes, cloud deployment

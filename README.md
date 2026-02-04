@@ -12,11 +12,10 @@
 
 <p align="center">
   <a href="#-quick-start">Quick Start</a> •
+  <a href="#-web-interface">Web Interface</a> •
   <a href="#-features">Features</a> •
   <a href="#-architecture">Architecture</a> •
-  <a href="#-demo">Demo</a> •
-  <a href="#-api">API</a> •
-  <a href="#-contributing">Contributing</a>
+  <a href="#-api">API</a>
 </p>
 
 <p align="center">
@@ -24,6 +23,7 @@
   <img src="https://img.shields.io/badge/PyTorch-2.0+-ee4c2c?style=flat-square&logo=pytorch&logoColor=white" alt="PyTorch"/>
   <img src="https://img.shields.io/badge/Transformers-🤗_HuggingFace-yellow?style=flat-square" alt="Transformers"/>
   <img src="https://img.shields.io/badge/Flask-API-000000?style=flat-square&logo=flask&logoColor=white" alt="Flask"/>
+  <img src="https://img.shields.io/badge/Web-Interface-blue?style=flat-square&logo=javascript&logoColor=white" alt="Web Interface"/>
   <img src="https://img.shields.io/badge/License-MIT-green?style=flat-square" alt="License"/>
 </p>
 
@@ -39,6 +39,8 @@
 ### 🎯 **Zero Tolerance for Missed Hate Speech**
 
 *A linguistic firewall that catches what others miss—across languages, scripts, and cultural contexts.*
+
+### 🌐 **Now with Full-Featured Web Interface!**
 
 </div>
 
@@ -93,7 +95,7 @@ Operator-grade tooling:
 
 ## 🚀 Quick Start
 
-### 30-Second Setup
+### 30-Second Launch (Web Interface)
 
 ```bash
 # Clone and install
@@ -101,8 +103,10 @@ git clone https://github.com/your-org/must-in.git
 cd must-in
 pip install -r requirements.txt
 
-# Launch the UI
-python api/app_lite.py
+# Launch the web interface
+scripts\start_server.bat  # Windows
+# or
+python api/app_lite.py    # Linux/Mac
 ```
 
 **Open your browser to** → [http://localhost:8080](http://localhost:8080)
@@ -110,6 +114,63 @@ python api/app_lite.py
 <p align="center">
   <img src="https://img.shields.io/badge/Ready_in-30_seconds-00c853?style=for-the-badge" alt="Ready"/>
 </p>
+
+### Test with Multilingual Examples
+
+```
+English:  "This is a test message"
+Hindi:    "यह एक परीक्षण संदेश है"
+Tamil:    "இது ஒரு சோதனை செய்தி"
+Mixed:    "This is एक test with தமிழ்"
+```
+
+📖 **Full guide:** See [LAUNCH_GUIDE.md](LAUNCH_GUIDE.md) for detailed testing instructions.
+
+---
+
+## 🌐 Web Interface
+
+The MUST++ web interface provides an **operator-grade UI** for multilingual content moderation:
+
+### Key Features
+
+✅ **Real-time Script Detection** - Automatically identifies Tamil, Hindi, English, and mixed scripts as you type  
+✅ **Multilingual Classification** - Classifies as Neutral, Offensive, or Hate with confidence scores  
+✅ **Full Explainability** - Shows detected harm tokens, identity groups, and reasoning  
+✅ **System Transparency** - View technical details like fallback status, entropy, and processing time  
+✅ **History Tracking** - Keeps last 50 analyses in browser localStorage  
+✅ **Dark Mode** - System-aware theme with light/dark/auto modes  
+✅ **Keyboard Shortcuts** - Power user features (`Ctrl+Enter` to analyze, `/` to focus, etc.)  
+✅ **Accessible** - Full ARIA support, color-blind safe, keyboard navigation
+
+### 4-Layer Architecture
+
+1. **Input Layer** - Text input with real-time script detection
+2. **Decision Layer** - Final classification with confidence and safety badge
+3. **Explanation Layer** - Harm tokens, justification, rejected labels
+4. **System Trace** - Languages, scripts, transformer status, fallback info
+
+### Two Server Modes
+
+**Lightweight Mode (Recommended for Testing):**
+```bash
+python api/app_lite.py
+```
+- ✅ Fast startup (2-3 seconds)
+- ✅ No transformer dependencies
+- ✅ Uses fallback classifiers
+- 💡 Perfect for development and demos
+
+**Full Pipeline Mode (Production):**
+```bash
+python api/app.py
+```
+- ✅ High accuracy with transformers
+- ✅ Full MUST++ pipeline
+- ⚠️ Slower startup (30-60 seconds)
+- 💡 Best for production deployments
+
+📖 **Learn more:** [FRONTEND_README.md](FRONTEND_README.md)
 
 ---
 
@@ -428,6 +489,27 @@ python api/test_api.py
 - [ ] A/B testing framework
 
 </details>
+
+---
+
+## 📚 Documentation & Resources
+
+| Resource | Description | Use Case |
+|----------|-------------|----------|
+| **[LAUNCH_GUIDE.md](LAUNCH_GUIDE.md)** | Complete launch tutorial with troubleshooting | 🚀 First-time setup |
+| **[FRONTEND_README.md](FRONTEND_README.md)** | Web interface documentation | 🎨 Understanding the UI |
+| **[PROJECT_STATUS.md](PROJECT_STATUS.md)** | Current project status & checklist | ✅ Verification & testing |
+| **[TESTING_EXAMPLES.html](TESTING_EXAMPLES.html)** | Interactive testing page | 🧪 Quick testing |
+| **[QUICKSTART.md](QUICKSTART.md)** | Quick reference guide | ⚡ Fast experimentation |
+| **[MUST_PLUS_PLUS.md](MUST_PLUS_PLUS.md)** | Architecture deep-dive | 🏗️ Technical understanding |
+| **[VALIDATION_SUMMARY.md](VALIDATION_SUMMARY.md)** | Evaluation results | 📊 Performance metrics |
+
+### 🎯 Quick Links
+
+- 🌐 **Web Interface:** [http://localhost:8080](http://localhost:8080) (after starting server)
+- 🧪 **Testing Page:** Open `TESTING_EXAMPLES.html` in browser for copy-paste examples
+- 🔧 **API Health:** [http://localhost:8080/health](http://localhost:8080/health)
+- 📖 **Full Tutorial:** See [LAUNCH_GUIDE.md](LAUNCH_GUIDE.md) for step-by-step instructions
 
 ---
 

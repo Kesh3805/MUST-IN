@@ -37,7 +37,16 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 app = Flask(__name__, static_folder='../frontend', static_url_path='')
-CORS(app)
+# Enable CORS with explicit configuration for local development
+CORS(app, resources={
+    r"/*": {
+        "origins": "*",
+        "methods": ["GET", "POST", "OPTIONS"],
+        "allow_headers": ["Content-Type"],
+        "expose_headers": ["Content-Type"],
+        "supports_credentials": False
+    }
+})
 
 
 # ==================== Rate Limiting ====================
@@ -221,7 +230,7 @@ class LightweightAnalyzer:
             # === HATE SPEECH (Targeted slurs and dehumanizing terms) ===
             # ============================================================
             
-            # --- Hindi/Urdu Caste Slurs ---
+            # --- Hindi Caste Slurs ---
             "bhangi": {"severity": "hate", "category": "caste", "groups": ["dalit"]},
             "bhangion": {"severity": "hate", "category": "caste", "groups": ["dalit"]},
             "bhangiyon": {"severity": "hate", "category": "caste", "groups": ["dalit"]},
@@ -641,7 +650,13 @@ def add_headers(response):
 @app.route('/')
 def index():
     """Serve the frontend."""
-    return send_from_directory('../frontend', 'index.html')
+    return send_from_directory(app.static_folder, 'index.html')
+
+
+@app.route('/test')
+def test_page():
+    """Serve the API test page."""
+    return send_from_directory(app.static_folder, 'test_api.html')
 
 
 @app.route('/health', methods=['GET'])

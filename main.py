@@ -12,6 +12,8 @@ from src.evaluation.metrics import Evaluator
 from src.xai.explainer import HateSpeechExplainer
 from src.utils.model_persistence import ModelManager, ResultsManager
 from src.utils.results_summary import ResultsSummarizer
+from src.utils.env import get_env_bool, get_env_str
+from src.utils.model_download import preload_models
 import torch
 
 try:
@@ -28,6 +30,8 @@ def main():
                        help='Save trained models for later use')
     parser.add_argument('--run-dl', action='store_true', 
                        help='Run deep learning models (mBERT)')
+    parser.add_argument('--run-xlm', action='store_true', 
+                       help='Run deep learning model (XLM-RoBERTa)')
     parser.add_argument('--run-uncased', action='store_true', 
                        help='Run traditional models with uncased text')
     parser.add_argument('--run-bert-embed', action='store_true', 
@@ -37,6 +41,14 @@ def main():
     args = parser.parse_args()
     
     print("=== MUST-IN Framework Implementation ===")
+
+    # Optional: preload paper-specified transformer models
+    if get_env_bool("MUST_PRELOAD_MODELS", default=False):
+        downloaded = preload_models()
+        if downloaded:
+            print(f"Preloaded models: {downloaded}")
+        else:
+            print("No models were preloaded. Check network or model names.")
     
     # Initialize managers
     model_manager = ModelManager()
@@ -223,21 +235,32 @@ def main():
     # Skipping heavy training in this script, providing the structure to run it.
     # To run DL: set RUN_DL = True
     RUN_DL = args.run_dl
+    RUN_XLM = args.run_xlm
     
-    if RUN_DL:
-        print("\n--- Step 5.2: Deep Learning Models (mBERT) ---")
+    if RUN_DL or RUN_XLM:
+        print("\n--- Step 5.2: Deep Learning Models (Transformers) ---")
         # Note: HF Trainer needs numeric labels
         # Create a small validation split from training only (keep test held out)
         X_tr, X_val, y_tr, y_val = train_test_split(
             X_train, y_train, test_size=0.2, random_state=SEED, stratify=y_train
         )
 
-        dl_classifier = TransformerClassifier('bert-base-multilingual-cased', num_labels=3)
-        dl_classifier.train(X_tr.tolist(), y_tr.tolist(), X_val.tolist(), y_val.tolist(), epochs=1)
-        
-        # Preds
-        dl_preds = dl_classifier.predict(X_test.tolist())
-        evaluator.evaluate(y_test, dl_preds, None, "mBERT_Cased")
+        if RUN_DL:
+            model_name = get_env_str("MUST_MODEL_NAME", default="bert-base-multilingual-cased")
+            dl_classifier = TransformerClassifier(model_name, num_labels=3)
+            dl_classifier.train(X_tr.tolist(), y_tr.tolist(), X_val.tolist(), y_val.tolist(), epochs=1)
+            
+            # Preds
+            dl_preds = dl_classifier.predict(X_test.tolist())
+            evaluator.evaluate(y_test, dl_preds, None, "mBERT_Cased")
+
+        if RUN_XLM:
+            xlm_classifier = TransformerClassifier('xlm-roberta-base', num_labels=3)
+            xlm_classifier.train(X_tr.tolist(), y_tr.tolist(), X_val.tolist(), y_val.tolist(), epochs=1)
+            
+            # Preds
+            xlm_preds = xlm_classifier.predict(X_test.tolist())
+            evaluator.evaluate(y_test, xlm_preds, None, "XLM_RoBERTa")
 
         # Explain DL Model
         print("\n--- Step 7: XAI (Deep Learning) ---")

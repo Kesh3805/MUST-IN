@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>MUST++ API Test</title>
+    <style>
+        body { font-family: monospace; padding: 20px; background: #f5f5f5; }
+        .test { margin: 20px 0; padding: 15px; background: white; border-left: 4px solid #007bff; }
+        .success { border-left-color: #28a745; }
+        .error { border-left-color: #dc3545; }
+        button { padding: 10px 20px; margin: 5px; cursor: pointer; }
+        pre { background: #f8f8f8; padding: 10px; overflow: auto; }
+        .status { font-weight: bold; margin-bottom: 10px; }
+    </style>
+</head>
+<body>
+    <h1>🧪 MUST++ API Test</h1>
+    <p>Testing API endpoints at: <strong>http://localhost:8080</strong></p>
+    
+    <div id="results"></div>
+    
+    <div style="margin-top: 20px;">
+        <button onclick="testHealth()">Test /health</button>
+        <button onclick="testDetectScript()">Test /detect-script</button>
+        <button onclick="testAnalyze()">Test /analyze</button>
+        <button onclick="runAllTests()">Run All Tests</button>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8080';
+        const results = document.getElementById('results');
+
+        function addResult(title, success, data) {
+            const div = document.createElement('div');
+            div.className = `test ${success ? 'success' : 'error'}`;
+            div.innerHTML = `
+                <div class="status">${success ? '✅' : '❌'} ${title}</div>
+                <pre>${JSON.stringify(data, null, 2)}</pre>
+            `;
+            results.appendChild(div);
+        }
+
+        async function testHealth() {
+            console.log('Testing /health...');
+            try {
+                const response = await fetch(`${API_BASE}/health`);
+                const data = await response.json();
+                addResult('GET /health', response.ok, data);
+            } catch (error) {
+                addResult('GET /health', false, { error: error.message });
+            }
+        }
+
+        async function testDetectScript() {
+            console.log('Testing /detect-script...');
+            try {
+                const response = await fetch(`${API_BASE}/detect-script`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ text: 'यह एक परीक्षण है' })
+                });
+                const data = await response.json();
+                addResult('POST /detect-script', response.ok, data);
+            } catch (error) {
+                addResult('POST /detect-script', false, { error: error.message });
+            }
+        }
+
+        async function testAnalyze() {
+            console.log('Testing /analyze...');
+            try {
+                const response = await fetch(`${API_BASE}/analyze`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ text: 'This is a test message' })
+                });
+                const data = await response.json();
+                addResult('POST /analyze', response.ok, data);
+            } catch (error) {
+                addResult('POST /analyze', false, { error: error.message });
+            }
+        }
+
+        async function runAllTests() {
+            results.innerHTML = '';
+            await testHealth();
+            await new Promise(r => setTimeout(r, 500));
+            await testDetectScript();
+            await new Promise(r => setTimeout(r, 500));
+            await testAnalyze();
+        }
+
+        // Auto-run on load
+        window.addEventListener('load', () => {
+            console.log('Page loaded, running tests...');
+            setTimeout(runAllTests, 1000);
+        });
+    </script>
+</body>
+</html>

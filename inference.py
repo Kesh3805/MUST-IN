@@ -24,7 +24,9 @@ from pathlib import Path
 # Add src to path for imports
 sys.path.insert(0, str(Path(__file__).parent))
 
-from src.pipeline import MUSTPlusPipeline
+from src.pipeline import MUSTPlusPipeline, PipelineConfig
+from src.utils.env import get_env_bool, get_env_str
+from src.utils.model_download import preload_models
 
 
 def classify_text(pipeline: MUSTPlusPipeline, text: str, verbose: bool = False) -> Dict:
@@ -208,6 +210,10 @@ def demo_mode(pipeline: MUSTPlusPipeline):
 
 def main():
     """Main entry point."""
+    # Optional: preload paper-specified transformer models
+    if get_env_bool("MUST_PRELOAD_MODELS", default=False):
+        preload_models()
+
     parser = argparse.ArgumentParser(
         description='MUST++ Multilingual Hate Speech Detection System',
         formatter_class=argparse.RawDescriptionHelpFormatter,
@@ -260,8 +266,22 @@ Examples:
     parser.add_argument(
         '--model',
         type=str,
-        default='bert-base-multilingual-cased',
+        default=get_env_str("MUST_MODEL_NAME", default="bert-base-multilingual-cased"),
         help='HuggingFace model name (default: bert-base-multilingual-cased)'
+    )
+
+    transformer_group = parser.add_mutually_exclusive_group()
+    transformer_group.add_argument(
+        '--disable-transformer',
+        action='store_true',
+        default=get_env_bool("MUST_DISABLE_TRANSFORMER", default=True),
+        help='Disable transformer inference (fallback-only mode)'
+    )
+    transformer_group.add_argument(
+        '--enable-transformer',
+        action='store_false',
+        dest='disable_transformer',
+        help='Enable transformer inference'
     )
     
     parser.add_argument(
@@ -282,10 +302,12 @@ Examples:
     
     # Initialize pipeline
     print("Initializing MUST++ Pipeline...")
+    config = PipelineConfig(disable_transformer=args.disable_transformer)
     pipeline = MUSTPlusPipeline(
         model_name=args.model,
         confidence_threshold=args.confidence_threshold,
-        device=args.device
+        device=args.device,
+        config=config
     )
     
     # Execute based on mode
