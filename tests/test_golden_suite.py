@@ -273,6 +273,7 @@ class TestGoldenSuite:
         result = self.pipeline.classify("")
         assert result.label == "neutral"
         assert result.confidence == 1.0
+        assert result.degraded_mode is True
     
     def test_whitespace_only(self):
         """Whitespace-only input should return neutral."""
@@ -494,7 +495,7 @@ if __name__ == "__main__":
         test_cases = [
             ("test_hate_katua_slur", "saale katue sab desh se nikalo", "hate"),
             ("test_hate_katue_variant", "yeh katue sirf masla karte hain", "hate"),
-            ("test_hate_caste_chamar", "ye chamaar log kahan se aate hain", "hate"),
+            ("test_hate_caste_discrimination_chamar", "ye chamaar log kahan se aate hain", "hate"),
             ("test_hate_violence", "maro inko, saalo ko jinda jalado", "hate"),
             ("test_neutral_english", "The weather is nice today.", "neutral"),
             ("test_neutral_hindi", "Yaar aaj weather bohot accha hai", "neutral"),

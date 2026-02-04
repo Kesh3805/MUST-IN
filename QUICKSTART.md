@@ -58,7 +58,7 @@ python main.py --run-dl --save-models
 After running, you'll find:
 
 ### Results Directory
-- `results_summary.html` - **Open this in browser for full interactive report**
+- `results/results_summary.html` - **Open this in browser for full interactive report**
 - `model_comparison.csv` - Tabular comparison of all models
 - `model_comparison_plots.png` - Visual comparison charts
 - `performance_heatmap.png` - Heatmap of model metrics

@@ -6,6 +6,7 @@ from src.utils.config import (
     NORMALIZATION_DICT_HINDI, 
     NORMALIZATION_DICT_TAMIL,
     EMOJI_INTENT_MAP,
+    FOREIGN_TERM_TRANSLATIONS,
     INTENSITY_MODIFIERS
 )
 
@@ -175,6 +176,26 @@ class TextPreprocessor:
                 normalized_words.append(word)
                 
         return " ".join(normalized_words)
+
+    def translate_foreign_terms(self, text):
+        """
+        Paper preprocessing: translate mixed-language tokens via dictionary.
+
+        This is a light, dictionary-based normalization step intended to
+        preserve meaning for common foreign terms without full translation.
+        """
+        if not isinstance(text, str):
+            return ""
+
+        if not FOREIGN_TERM_TRANSLATIONS:
+            return text
+
+        words = text.split()
+        translated = [
+            FOREIGN_TERM_TRANSLATIONS.get(word.lower(), word)
+            for word in words
+        ]
+        return " ".join(translated)
     
     def extract_harm_tokens(self, text: str) -> List[str]:
         """
@@ -197,8 +218,9 @@ class TextPreprocessor:
         1. Noise removal (URLs, mentions, pure noise ONLY)
         2. Emoji handling (convert to intent tokens)
         3. Special character removal (preserve scripts)
-        4. Transliteration normalization (soft, harm-preserving)
-        5. Case handling (optional)
+        4. Translate mixed-language tokens (dictionary-based)
+        5. Transliteration normalization (soft, harm-preserving)
+        6. Case handling (optional)
         
         NEVER:
         - Remove slurs or profanity
@@ -213,11 +235,14 @@ class TextPreprocessor:
 
         # 3. Special Character Removal (preserve scripts)
         text = self.remove_special_characters(text)
+
+        # 4. Translate mixed-language tokens (dictionary-based)
+        text = self.translate_foreign_terms(text)
         
-        # 4. Transliteration Normalization (soft)
+        # 5. Transliteration Normalization (soft)
         text = self.normalize_transliteration(text, language_script)
         
-        # 5. Case Handling (optional - preserve by default)
+        # 6. Case Handling (optional - preserve by default)
         if uncased:
             text = text.lower()
             
