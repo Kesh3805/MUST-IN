@@ -205,6 +205,18 @@ MIXED_TOKEN_NORMALIZATION = {
 }
 
 # ============================================
+# FOREIGN TERM TRANSLATION
+# ============================================
+# Optional dictionary-based normalization for mixed-language tokens.
+# Keep this list small and domain-specific to avoid over-normalization.
+FOREIGN_TERM_TRANSLATIONS = {
+    "fb": "facebook",
+    "yt": "youtube",
+    "ig": "instagram",
+    "kpk": "khyber pakhtoon khaa",
+}
+
+# ============================================
 # INTENSITY MODIFIERS
 # ============================================
 INTENSITY_MODIFIERS = [
