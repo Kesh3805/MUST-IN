@@ -878,7 +878,7 @@ class MUSTPlusPipeline:
             rejection_reasons={},
             entropy=0.0,
             tokenization_coverage=1.0,
-            degraded_mode=False
+            degraded_mode=self.degraded_mode
         )
     
     def _classify_fallback_only(
