@@ -416,6 +416,7 @@ class MUSTPlusPipeline:
         
         REMOVES:
         - URLs, mentions
+        - Special characters
         - Pure noise
         
         CONVERTS:
@@ -449,6 +450,10 @@ class MUSTPlusPipeline:
         # Map emoji names to intent tokens
         for emoji_name, intent in self.emoji_intent_map.items():
             normalized = normalized.replace(emoji_name, intent)
+
+        # 3b. Remove special characters (preserve scripts and whitespace)
+        normalized = re.sub(r"[^\w\s]", " ", normalized, flags=re.UNICODE)
+        normalized = normalized.replace("_", " ")
         
         # 4. Normalize repeated characters (but preserve meaning)
         # e.g., "haaaaaate" -> "haate" (not "hate")
