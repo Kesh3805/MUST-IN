@@ -5,6 +5,7 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import FunctionTransformer
 from sklearn.metrics import classification_report
+from sklearn.utils.class_weight import compute_class_weight
 import joblib
 import numpy as np
 
@@ -74,6 +75,28 @@ class TraditionalClassifier:
         return self.pipeline.predict_proba(X)
 
 
+class WeightedLossTrainer(Trainer):
+    """Custom Trainer with class-weighted loss for imbalanced datasets"""
+    def __init__(self, class_weights=None, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.class_weights = class_weights
+        
+    def compute_loss(self, model, inputs, return_outputs=False, num_items_in_batch=None):
+        labels = inputs.pop("labels")
+        outputs = model(**inputs)
+        logits = outputs.logits
+        
+        if self.class_weights is not None:
+            # Apply class weights to cross-entropy loss
+            weight_tensor = torch.tensor(self.class_weights, dtype=torch.float32).to(logits.device)
+            loss_fct = nn.CrossEntropyLoss(weight=weight_tensor)
+        else:
+            loss_fct = nn.CrossEntropyLoss()
+            
+        loss = loss_fct(logits, labels)
+        return (loss, outputs) if return_outputs else loss
+
+
 class DLDataset(torch.utils.data.Dataset):
     def __init__(self, encodings, labels):
         self.encodings = encodings
@@ -103,7 +126,13 @@ class TransformerClassifier:
     def train(self, X_train, y_train, X_val, y_val, epochs=3, batch_size=8):
         """
         End-to-end training (Section 5.3)
+        With class weighting for imbalanced datasets (MANDATORY)
         """
+        # Compute class weights for imbalanced dataset
+        unique_classes = np.unique(y_train)
+        class_weights = compute_class_weight('balanced', classes=unique_classes, y=y_train)
+        print(f"Class weights (imbalance correction): {dict(zip(unique_classes, class_weights))}")
+        
         train_encodings = self.tokenizer(X_train, truncation=True, padding=True, max_length=128)
         val_encodings = self.tokenizer(X_val, truncation=True, padding=True, max_length=128)
         
@@ -121,10 +150,11 @@ class TransformerClassifier:
             logging_steps=10,
             evaluation_strategy="epoch",
             save_strategy="no", # Save space for this demo
-            # Section 5.3: Use categorical cross-entropy (default in HF for classifications)
+            # Section 5.3: Categorical cross-entropy with class weighting
         )
         
-        self.trainer = Trainer(
+        self.trainer = WeightedLossTrainer(
+            class_weights=class_weights,
             model=self.model,
             args=training_args,
             train_dataset=train_dataset,
@@ -149,17 +179,39 @@ class TransformerClassifier:
             'recall': recall
         }
 
-    def predict(self, texts):
-        # For inference
-        encodings = self.tokenizer(texts, truncation=True, padding=True, max_length=128, return_tensors='pt')
-        # Move to device
+    def predict(self, texts, batch_size=32):
+        """Batch prediction to avoid OOM errors"""
         device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
         self.model.to(device)
-        encodings = {k: v.to(device) for k, v in encodings.items()}
+        self.model.eval()
         
-        with torch.no_grad():
-            outputs = self.model(**encodings)
+        all_predictions = []
+        # Process in batches
+        for i in range(0, len(texts), batch_size):
+            batch_texts = texts[i:i+batch_size]
+            encodings = self.tokenizer(batch_texts, truncation=True, padding=True, 
+                                      max_length=128, return_tensors='pt')
+            encodings = {k: v.to(device) for k, v in encodings.items()}
+            
+            with torch.no_grad():
+                outputs = self.model(**encodings)
+            
+            logits = outputs.logits
+            batch_preds = torch.argmax(logits, dim=-1).cpu().numpy()
+            all_predictions.extend(batch_preds)
         
-        logits = outputs.logits
-        predictions = torch.argmax(logits, dim=-1).cpu().numpy()
-        return predictions
+        return np.array(all_predictions)
+    
+    def save_model(self, save_dir):
+        """Save trained model and tokenizer"""
+        import os
+        os.makedirs(save_dir, exist_ok=True)
+        self.model.save_pretrained(save_dir)
+        self.tokenizer.save_pretrained(save_dir)
+        print(f"Model saved to: {save_dir}")
+    
+    def load_model(self, load_dir):
+        """Load trained model and tokenizer"""
+        self.model = AutoModelForSequenceClassification.from_pretrained(load_dir)
+        self.tokenizer = AutoTokenizer.from_pretrained(load_dir)
+        print(f"Model loaded from: {load_dir}")

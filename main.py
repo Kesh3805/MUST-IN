@@ -250,8 +250,14 @@ def main():
             dl_classifier = TransformerClassifier(model_name, num_labels=3)
             dl_classifier.train(X_tr.tolist(), y_tr.tolist(), X_val.tolist(), y_val.tolist(), epochs=1)
             
-            # Preds
-            dl_preds = dl_classifier.predict(X_test.tolist())
+            # Save trained model
+            if args.save_models:
+                model_save_path = 'saved_models/mbert_trained'
+                dl_classifier.save_model(model_save_path)
+            
+            # Preds with batching
+            print("Running predictions on test set...")
+            dl_preds = dl_classifier.predict(X_test.tolist(), batch_size=32)
             evaluator.evaluate(y_test, dl_preds, None, "mBERT_Cased")
 
         if RUN_XLM:
