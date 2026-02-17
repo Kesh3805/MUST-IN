@@ -247,7 +247,7 @@ python api/app.py
                     ┌───────────────────────────────────────────┘
                     ▼
             ┌──────────────────────────────────────────────────────────┐
-            │                      STEP 7: EXPLAIN                      │
+            │                      STEP 7: EXPLAIN                     │
             │  "This text was classified as HATE because it contains   │
             │   the slur 'X' targeting group 'Y'. Confidence: 0.95"    │
             └──────────────────────────────────────────────────────────┘
